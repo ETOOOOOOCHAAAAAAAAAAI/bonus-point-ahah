@@ -12,20 +12,14 @@ const peers = {};
 let myStream;
 let currentRoomId = null;
 let myId = null;
-
-// Генерация случайного ID комнаты
 function generateRoomId() {
     return Math.random().toString(36).substring(2, 8);
 }
-
-// Создание новой комнаты
 createRoomBtn.addEventListener('click', () => {
     const roomId = generateRoomId();
     roomIdInput.value = roomId;
     joinRoom(roomId);
 });
-
-// Присоединение к существующей комнате
 joinRoomBtn.addEventListener('click', () => {
     const roomId = roomIdInput.value.trim();
     if (roomId) {
@@ -35,19 +29,14 @@ joinRoomBtn.addEventListener('click', () => {
     }
 });
 
-// Функция присоединения к комнате
 function joinRoom(roomId) {
     currentRoomId = roomId;
     roomForm.style.display = 'none';
     roomInfo.style.display = 'block';
     roomInfo.textContent = `Комната: ${roomId}`;
     joinBtn.style.display = 'block';
-    
-    // Обновляем URL с ID комнаты
     window.history.pushState({}, '', `/${roomId}`);
 }
-
-// Получение доступа к камере и микрофону
 async function getMedia() {
     try {
         myStream = await navigator.mediaDevices.getUserMedia({
@@ -55,29 +44,19 @@ async function getMedia() {
             audio: true
         });
         addVideoStream(myStream, 'me');
-
-        // Получаем свой socket.id
         socket.on('connect', () => {
             myId = socket.id;
         });
-        // Присоединение к комнате
         socket.emit('join-room', currentRoomId, socket.id);
-
-        // Получаем список уже присутствующих пользователей и инициируем соединения
         socket.on('all-users', (users) => {
             users.forEach(userId => {
                 if (!peers[userId]) {
-                    createPeer(userId, true); // инициатор только новый
+                    createPeer(userId, true); 
                 }
             });
         });
-
-        // Обработка входящих соединений
         socket.on('user-connected', userId => {
-            // ничего не делаем, инициатор только новый участник
         });
-
-        // Обработка отключения пользователей
         socket.on('user-disconnected', userId => {
             if (peers[userId]) {
                 peers[userId].destroy();
@@ -89,8 +68,6 @@ async function getMedia() {
         console.error('Ошибка доступа к медиаустройствам:', err);
     }
 }
-
-// Добавление видео в сетку
 function addVideoStream(stream, userId) {
     if (document.getElementById('video-' + userId)) return;
     const video = document.createElement('video');
@@ -113,8 +90,6 @@ function removeVideoStream(userId) {
         video.parentNode.remove();
     }
 }
-
-// Создание peer-соединения
 function createPeer(userId, initiator) {
     const peer = new SimplePeer({
         initiator: initiator,
@@ -139,16 +114,12 @@ function createPeer(userId, initiator) {
 
     peers[userId] = peer;
 }
-
-// Обработка входящих сигналов
 socket.on('signal', data => {
     if (!peers[data.from]) {
-        createPeer(data.from, false); // не инициатор, если уже есть peer — не создаём
+        createPeer(data.from, false); 
     }
     peers[data.from].signal(data.signal);
 });
-
-// Обработчики кнопок
 joinBtn.addEventListener('click', () => {
     getMedia();
     joinBtn.style.display = 'none';
@@ -168,8 +139,6 @@ leaveBtn.addEventListener('click', () => {
     currentRoomId = null;
     myId = null;
 });
-
-// Проверка URL при загрузке страницы
 window.addEventListener('load', () => {
     const path = window.location.pathname;
     if (path.length > 1) {
