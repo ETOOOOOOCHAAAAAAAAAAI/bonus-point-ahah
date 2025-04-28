@@ -2,7 +2,7 @@ const io = require('socket.io-client');
 
 const SERVER_URL = 'http://localhost:3000';
 const ROOM_ID = 'testroom';
-const CLIENTS = 100; //
+const CLIENTS = 100;
 
 const clients = [];
 let connectedCount = 0;
